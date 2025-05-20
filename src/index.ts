@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import axios from 'axios';
 import { deployContract } from './commands/deploy';
+import { compileContract } from './commands/compile';
 
 const program = new Command();
 
@@ -63,6 +64,22 @@ program
         } catch (err: any) {
             console.error(chalk.red('Error al solicitar fondos del faucet:'), err.response?.data || err.message);
         }
+    });
+
+program
+    .command('compile <contract-path>')
+    .description('Compila un contrato Cairo 1.x a Sierra y Casm')
+    .option('-o, --out-dir <directory>', 'Directorio de salida para los archivos compilados', 'out')
+    .option('-r, --replace-ids', 'Reemplazar IDs en el código compilado')
+    .option('-l, --allowed-libfuncs <libfuncs>', 'Lista de libfuncs permitidas (separadas por comas)')
+    .option('-s, --single-file', 'Generar un único archivo de salida')
+    .action((contractPath: string, options: any) => {
+        const compileOptions = {
+            replaceIds: options.replaceIds,
+            allowedLibfuncs: options.allowedLibfuncs ? options.allowedLibfuncs.split(',') : undefined,
+            singleFile: options.singleFile
+        };
+        compileContract(contractPath, options.outDir, compileOptions);
     });
 
 program.parse(process.argv); 
